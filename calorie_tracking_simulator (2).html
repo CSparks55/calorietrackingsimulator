@@ -1,0 +1,204 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calorie Tracking Simulator</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            margin: 20px;
+        }
+        .container {
+            max-width: 600px;
+            margin: auto;
+        }
+        h1, h2 {
+            text-align: center;
+        }
+        .input-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+        }
+        input[type="number"], select {
+            width: 100%;
+            padding: 8px;
+            box-sizing: border-box;
+        }
+        button {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .results {
+            margin-top: 20px;
+        }
+        .chart-container {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Calorie Tracking Simulator</h1>
+        <div class="input-group">
+            <label for="age">Age:</label>
+            <input type="number" id="age" min="1" max="100" value="16">
+        </div>
+        <div class="input-group">
+            <label for="weight">Weight (kg):</label>
+            <input type="number" id="weight" min="1" max="300" value="60">
+        </div>
+        <div class="input-group">
+            <label for="height">Height (cm):</label>
+            <input type="number" id="height" min="50" max="250" value="165">
+        </div>
+        <div class="input-group">
+            <label for="gender">Gender:</label>
+            <select id="gender">
+                <option value="Male">Male</option>
+                <option value="Female">Female</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label for="goal">Daily Calorie Goal:</label>
+            <input type="number" id="goal" min="0" value="2000">
+        </div>
+        <h2>Day 1</h2>
+        <div class="input-group">
+            <label for="day1_meals">Meals, Snacks, Beverages:</label>
+            <input type="text" id="day1_meals">
+        </div>
+        <div class="input-group">
+            <label for="day1_meals_calories">Total Calories Consumed:</label>
+            <input type="number" id="day1_meals_calories" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="day1_activities">Activities:</label>
+            <input type="text" id="day1_activities">
+        </div>
+        <div class="input-group">
+            <label for="day1_activities_calories">Total Calories Expended:</label>
+            <input type="number" id="day1_activities_calories" min="0" value="0">
+        </div>
+        <h2>Day 2</h2>
+        <div class="input-group">
+            <label for="day2_meals">Meals, Snacks, Beverages:</label>
+            <input type="text" id="day2_meals">
+        </div>
+        <div class="input-group">
+            <label for="day2_meals_calories">Total Calories Consumed:</label>
+            <input type="number" id="day2_meals_calories" min="0" value="0">
+        </div>
+        <div class="input-group">
+            <label for="day2_activities">Activities:</label>
+            <input type="text" id="day2_activities">
+        </div>
+        <div class="input-group">
+            <label for="day2_activities_calories">Total Calories Expended:</label>
+            <input type="number" id="day2_activities_calories" min="0" value="0">
+        </div>
+        <button onclick="calculateCalories()">Calculate</button>
+        <div class="results" id="results"></div>
+        <div class="chart-container">
+            <canvas id="calorieChart"></canvas>
+        </div>
+    </div>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script>
+        function calculateBMR(weight, height, age, gender) {
+            if (gender === 'Male') {
+                return 88.362 + (13.397 * weight) + (4.799 * height) - (5.677 * age);
+            } else {
+                return 447.593 + (9.247 * weight) + (3.098 * height) - (4.330 * age);
+            }
+        }
+
+        function calculateCalories() {
+            const age = parseFloat(document.getElementById('age').value);
+            const weight = parseFloat(document.getElementById('weight').value);
+            const height = parseFloat(document.getElementById('height').value);
+            const gender = document.getElementById('gender').value;
+            const goal = parseFloat(document.getElementById('goal').value);
+
+            const day1_meals_calories = parseFloat(document.getElementById('day1_meals_calories').value);
+            const day1_activities_calories = parseFloat(document.getElementById('day1_activities_calories').value);
+            const day2_meals_calories = parseFloat(document.getElementById('day2_meals_calories').value);
+            const day2_activities_calories = parseFloat(document.getElementById('day2_activities_calories').value);
+
+            const bmr = calculateBMR(weight, height, age, gender);
+
+            const day1_total_expended = day1_activities_calories + bmr;
+            const day1_net_calories = day1_meals_calories - day1_total_expended;
+            const day1_goal_diff = day1_meals_calories - goal;
+
+            const day2_total_expended = day2_activities_calories + bmr;
+            const day2_net_calories = day2_meals_calories - day2_total_expended;
+            const day2_goal_diff = day2_meals_calories - goal;
+
+            const results = `
+                <h2>Results</h2>
+                <p>Day 1: Total Consumed: ${day1_meals_calories} calories, Total Expended: ${day1_total_expended.toFixed(2)} calories, Net Calories: ${day1_net_calories.toFixed(2)} calories, Goal Difference: ${day1_goal_diff.toFixed(2)} calories</p>
+                <p>Day 2: Total Consumed: ${day2_meals_calories} calories, Total Expended: ${day2_total_expended.toFixed(2)} calories, Net Calories: ${day2_net_calories.toFixed(2)} calories, Goal Difference: ${day2_goal_diff.toFixed(2)} calories</p>
+            `;
+            document.getElementById('results').innerHTML = results;
+
+            const ctx = document.getElementById('calorieChart').getContext('2d');
+            new Chart(ctx, {
+                type: 'bar',
+                data: {
+                    labels: ['Day 1', 'Day 2'],
+                    datasets: [
+                        {
+                            label: 'Calories Consumed',
+                            data: [day1_meals_calories, day2_meals_calories],
+                            backgroundColor: 'rgba(75, 192, 192, 0.2)',
+                            borderColor: 'rgba(75, 192, 192, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Calories Expended (including BMR)',
+                            data: [day1_total_expended, day2_total_expended],
+                            backgroundColor: 'rgba(255, 99, 132, 0.2)',
+                            borderColor: 'rgba(255, 99, 132, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Net Calories',
+                            data: [day1_net_calories, day2_net_calories],
+                            backgroundColor: 'rgba(54, 162, 235, 0.2)',
+                            borderColor: 'rgba(54, 162, 235, 1)',
+                            borderWidth: 1
+                        },
+                        {
+                            label: 'Goal Difference',
+                            data: [day1_goal_diff, day2_goal_diff],
+                            backgroundColor: 'rgba(255, 206, 86, 0.2)',
+                            borderColor: 'rgba(255, 206, 86, 1)',
+                            borderWidth: 1
+                        }
+                    ]
+                },
+                options: {
+                    scales: {
+                        y: {
+                            beginAtZero: true
+                        }
+                    }
+                }
+            });
+        }
+    </script>
+</body>
+</html>
